@@ -21,7 +21,7 @@ export module BufferUtils {
         break;
     }
 
-    const slice = new Uint8Array(view.buffer, 0, nullTerminatedLength);
+    const slice = new Uint8Array(view.buffer, view.byteOffset, nullTerminatedLength);
     return textDecoder.decode(slice);
   }
 
