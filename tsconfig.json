@@ -5,7 +5,7 @@
     "esModuleInterop": true,
     "target": "ES2021",
     "moduleResolution": "Node",
-    "module": "CommonJS",
+    "module": "ESNext",
     "declaration": true,
     "sourceMap": true,
     "outDir": "./dist",
