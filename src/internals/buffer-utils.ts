@@ -1,47 +1,53 @@
 import { CharBuffer } from './internal-types';
 
 export module BufferUtils {
+  export function createView(buffer: Uint8Array | Uint16Array | Uint32Array): DataView {
+    return new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+  }
+
   const textDecoder = new TextDecoder('ascii');
 
   export function readString<T extends number>(
-    buffer: DataView,
-    offset: number,
+    data: CharBuffer<T>,
     maxLength: T,
-  ): CharBuffer<T> {
+  ): string {
+    const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
     let nullTerminatedLength = 0;
 
     for (let i = 0; i < maxLength; i++) {
       nullTerminatedLength = i;
-      const nextByte = buffer.getUint8(offset + i);
+      const nextByte = view.getUint8(i);
       if (nextByte === 0)
         break;
     }
 
-    const slice = new Uint8Array(buffer.buffer, offset, nullTerminatedLength);
-    return {
-      string: textDecoder.decode(slice),
-      length: maxLength,
-    };
-  }
-
-  export function createView(buffer: Uint8Array | Uint16Array | Uint32Array): DataView {
-    return new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+    const slice = new Uint8Array(view.buffer, 0, nullTerminatedLength);
+    return textDecoder.decode(slice);
   }
 
   const textEncoder = new TextEncoder();
 
   export function writeString<T extends number>(
-    buffer: DataView,
-    offset: number,
-    charBuffer: CharBuffer<T>,
-  ): void {
-    const encodedString = textEncoder.encode(charBuffer.string);
+    string: string,
+    maxLength: T,
+  ): CharBuffer<T> {
+    const data = textEncoder.encode(string);
 
-    for (let i = 0; i < encodedString.byteLength; i++) {
-      buffer.setUint8(offset + i, encodedString[i]);
+    if (data.length === maxLength) {
+      data[maxLength - 1] = 0; // null termination char
+      return data;
     }
 
-    buffer.setUint8(offset + encodedString.byteLength, 0); // null-terminate the string
+    if (data.length > maxLength) {
+      // TODO warn that the string will be cut-off?
+    }
+
+    const charBuffer: CharBuffer<T> = new Uint8Array(maxLength);
+
+    charBuffer.set(data, 0);
+    charBuffer[maxLength - 1] = 0; // null termination char
+
+    return charBuffer;
   }
 
   export function intToBytesLE(num: number, byteLength: number): Uint8Array {

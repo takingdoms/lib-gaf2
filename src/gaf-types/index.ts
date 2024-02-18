@@ -1,6 +1,4 @@
-import { StrictExtract } from 'ts-essentials';
 import { ColorData } from '../color/color-data';
-import { ColorDataFormat } from '../color/color-data-format';
 
 export type GafEntry = {
   name: string;
@@ -44,6 +42,9 @@ export type GafLayerData =
 export type GafLayerDataPaletteIndices = {
   kind: 'palette-idx';
 
+  /** false = was never compressed; true = got decompressed; */
+  decompressed: boolean;
+
   /**
    * Each value represents an index into a palette (usually from .pcx files).
    * Length should always be width * height of the FrameData it belongs to.
@@ -56,9 +57,5 @@ export type GafLayerDataPaletteIndices = {
 
 export type GafLayerDataRawColors = {
   kind: 'raw-colors';
-  colorData: TAFColorData;
+  colorData: ColorData<'argb1555' | 'argb4444'>;
 };
-
-// TAFs are either argb1555 or argb4444
-export type TAFColorFormat = StrictExtract<ColorDataFormat, 'argb1555' | 'argb4444'>;
-export type TAFColorData = ColorData<TAFColorFormat>;
