@@ -1,12 +1,13 @@
 import { GafEntry } from '../gaf-types';
 import { BufferLike } from '../internals';
-import { GafFileMap } from './gaf-file-map';
+import * as Mapping from './mapping';
 
 export type GafReaderResult = {
   entries: GafEntry[];
-  map: GafFileMap;
+  map: Mapping.Section[];
 };
 
 export type GafReader = (buffer: BufferLike) => GafReaderResult;
 
 export { readFromBuffer } from './read-from-buffer';
+export * as Mapping from './mapping';

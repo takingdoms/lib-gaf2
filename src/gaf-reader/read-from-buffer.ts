@@ -1,11 +1,11 @@
 import { GafReader } from '.';
 import { GafEntry, GafFrame, GafFrameData, GafFrameDataSingleLayer, GafLayerData, GafLayerDataPaletteIndices, GafLayerDataRawColors } from '../gaf-types';
 import { BufferUtils, ENTRY_STRUCT_IO, ENTRY_STRUCT_SIZE, FRAME_DATA_STRUCT_IO, FRAME_DATA_STRUCT_SIZE, FRAME_STRUCT_IO, FRAME_STRUCT_SIZE, FrameDataStruct, HEADER_STRUCT_IO, HEADER_STRUCT_SIZE } from '../internals';
-import { GafFileMap } from './gaf-file-map';
+import { Mapping } from '.';
 
 type ReadingContext = {
   data: DataView;
-  map: GafFileMap;
+  map: Mapping.Section[];
 };
 
 export const readFromBuffer: GafReader = (buffer) => {
@@ -16,7 +16,7 @@ export const readFromBuffer: GafReader = (buffer) => {
   }
 
   const data = BufferUtils.createView(bytes);
-  const map: GafFileMap = [];
+  const map: Mapping.Section[] = [];
 
   const ctx: ReadingContext = {
     data,
@@ -35,7 +35,9 @@ function readEntries(ctx: ReadingContext): GafEntry[] {
   const headerStruct = HEADER_STRUCT_IO.read(ctx.data, 0);
   ctx.map.push({
     label: 'header',
-    pos: [0, HEADER_STRUCT_SIZE],
+    content: headerStruct,
+    offset: 0,
+    length: HEADER_STRUCT_SIZE,
   });
 
   const entries: GafEntry[] = [];
@@ -45,7 +47,9 @@ function readEntries(ctx: ReadingContext): GafEntry[] {
     const nextEntryPointer = ctx.data.getUint32(nextEntryPointerOffset, true);
     ctx.map.push({
       label: 'entry_pointer',
-      pos: [nextEntryPointerOffset, 4], // 4 = Uint32
+      content: nextEntryPointer,
+      offset: nextEntryPointerOffset,
+      length: 4, // 4 = Uint32
     });
 
     const entry = readEntry(ctx, nextEntryPointer);
@@ -59,7 +63,9 @@ function readEntry(ctx: ReadingContext, offset: number): GafEntry {
   const entryStruct = ENTRY_STRUCT_IO.read(ctx.data, offset);
   ctx.map.push({
     label: 'entry',
-    pos: [offset, ENTRY_STRUCT_SIZE],
+    content: entryStruct,
+    offset,
+    length: ENTRY_STRUCT_SIZE,
   });
 
   const name = BufferUtils.readString(entryStruct.name, 32);
@@ -72,7 +78,9 @@ function readEntry(ctx: ReadingContext, offset: number): GafEntry {
     const nextFrameStruct = FRAME_STRUCT_IO.read(ctx.data, nextFrameOffset);
     ctx.map.push({
       label: 'frame',
-      pos: [nextFrameOffset, FRAME_STRUCT_SIZE],
+      content: nextFrameStruct,
+      offset: nextFrameOffset,
+      length: FRAME_STRUCT_SIZE,
     });
 
     const frameData = readFrameData(ctx, nextFrameStruct.ptrFrameData);
@@ -97,7 +105,9 @@ function readFrameData(ctx: ReadingContext, offset: number): GafFrameData {
   const frameDataStruct = FRAME_DATA_STRUCT_IO.read(ctx.data, offset);
   ctx.map.push({
     label: 'frame_data',
-    pos: [offset, FRAME_DATA_STRUCT_SIZE],
+    content: frameDataStruct,
+    offset,
+    length: FRAME_DATA_STRUCT_SIZE,
   });
 
   if (
@@ -128,7 +138,9 @@ function readFrameData(ctx: ReadingContext, offset: number): GafFrameData {
     const nextPointer = ctx.data.getUint32(nextPointerOffset, true);
     ctx.map.push({
       label: 'sub_frame_data_pointer',
-      pos: [nextPointerOffset, 4], // 4 = Uint32
+      content: nextPointer,
+      offset: nextPointerOffset,
+      length: 4, // 4 = Uint32
     });
 
     const nextFrameData = readFrameData(ctx, nextPointer);
@@ -178,7 +190,9 @@ function readUncompressedLayerData(
 
   ctx.map.push({
     label: 'uncompressed_palette_indices',
-    pos: [offset, width * height],
+    content: Mapping.RawBytes,
+    offset,
+    length: width * height,
   });
 
   return {
@@ -241,7 +255,9 @@ function readCompressedLayerData(
 
   ctx.map.push({
     label: 'compressed_palette_indices',
-    pos: [startOffset, width * height],
+    content: Mapping.RawBytes,
+    offset: startOffset,
+    length: width * height,
   });
 
   return {
@@ -263,7 +279,9 @@ function readRawColors(
 
   ctx.map.push({
     label: 'raw_colors',
-    pos: [offset, width * height * 2],
+    content: Mapping.RawBytes,
+    offset,
+    length: width * height * 2,
   });
 
   return {
