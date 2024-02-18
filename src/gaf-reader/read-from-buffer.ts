@@ -89,6 +89,10 @@ function readEntry(ctx: ReadingContext, offset: number): GafEntry {
   };
 }
 
+// This doesn't seem to be documented but if the value of 'framePointers' equals 0xFF00
+// then the code should behave as if it was equal to 0. Why? I have no idea.
+const FRAME_POINTERS_SINGLE = 0xFF00; // aka -256 (int16) or 65280 (uint16)
+
 function readFrameData(ctx: ReadingContext, offset: number): GafFrameData {
   const frameDataStruct = FRAME_DATA_STRUCT_IO.read(ctx.data, offset);
   ctx.map.push({
@@ -96,7 +100,10 @@ function readFrameData(ctx: ReadingContext, offset: number): GafFrameData {
     pos: [offset, FRAME_DATA_STRUCT_SIZE],
   });
 
-  if (frameDataStruct.framePointers === 0) { // then 'ptrFrameData' points to pixel data
+  if (
+    frameDataStruct.framePointers === 0 ||
+    frameDataStruct.framePointers === FRAME_POINTERS_SINGLE
+  ) { // then 'ptrFrameData' points to pixel data
     const layerData = readLayerData(ctx, frameDataStruct);
 
     return {
@@ -110,8 +117,9 @@ function readFrameData(ctx: ReadingContext, offset: number): GafFrameData {
     };
   }
 
-  // if 'framePointers' !== 0 then 'ptrFrameData' points to a list of pointers each pointing to a
-  // FRAME_DATA_STRUCT. this list composes the subFrames (layers) of the current frame
+  // if 'framePointers' !== 0 && 'framePointers' !== 0xFF00
+  // then 'ptrFrameData' points to a list of pointers each pointing to a FRAME_DATA_STRUCT.
+  // this list composes the subFrames (layers) of the current frame
 
   const layers: GafFrameDataSingleLayer[] = [];
 
