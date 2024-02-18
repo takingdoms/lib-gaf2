@@ -1,6 +1,6 @@
 import { GafReader } from '.';
 import { GafEntry, GafFrame, GafFrameData, GafFrameDataSingleLayer, GafLayerData, GafLayerDataPaletteIndices, GafLayerDataRawColors } from '../gaf-types';
-import { BufferUtils, ENTRY_STRUCT_IO, ENTRY_STRUCT_SIZE, FRAME_DATA_STRUCT_IO, FRAME_DATA_STRUCT_SIZE, FRAME_STRUCT_IO, FrameDataStruct, HEADER_STRUCT_IO, HEADER_STRUCT_SIZE } from '../internals';
+import { BufferUtils, ENTRY_STRUCT_IO, ENTRY_STRUCT_SIZE, FRAME_DATA_STRUCT_IO, FRAME_DATA_STRUCT_SIZE, FRAME_STRUCT_IO, FRAME_STRUCT_SIZE, FrameDataStruct, HEADER_STRUCT_IO, HEADER_STRUCT_SIZE } from '../internals';
 import { GafFileMap } from './gaf-file-map';
 
 type ReadingContext = {
@@ -68,11 +68,11 @@ function readEntry(ctx: ReadingContext, offset: number): GafEntry {
   const framesStartOffset = offset + ENTRY_STRUCT_SIZE;
 
   for (let i = 0; i < entryStruct.frames; i++) {
-    const nextFrameOffset = framesStartOffset + (i * FRAME_DATA_STRUCT_SIZE);
+    const nextFrameOffset = framesStartOffset + (i * FRAME_STRUCT_SIZE);
     const nextFrameStruct = FRAME_STRUCT_IO.read(ctx.data, nextFrameOffset);
     ctx.map.push({
       label: 'frame',
-      pos: [nextFrameOffset, FRAME_DATA_STRUCT_SIZE],
+      pos: [nextFrameOffset, FRAME_STRUCT_SIZE],
     });
 
     const frameData = readFrameData(ctx, nextFrameStruct.ptrFrameData);
@@ -265,4 +265,17 @@ function readRawColors(
       format,
     },
   };
+}
+
+function debugPrintStruct(struct: Record<string, number | Uint8Array>) {
+  for (const [field, value] of Object.entries(struct)) {
+    if (typeof value === 'number') {
+      const hex = '0x' + value.toString(16).toUpperCase().padStart(4, '0');
+      console.log(`${field}: ${value} (${hex})`);
+    }
+    else { // DataView
+      console.log(`${field}: [${value.byteLength}]`);
+    }
+  }
+  console.log();
 }
