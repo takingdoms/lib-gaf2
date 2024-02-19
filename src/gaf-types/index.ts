@@ -1,4 +1,4 @@
-import { ColorData } from '@/color/color-data';
+import { ColorData } from "../color/color-data";
 
 export type GafEntry = {
   name: string;

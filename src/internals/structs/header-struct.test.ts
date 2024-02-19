@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { HeaderStruct, HEADER_STRUCT_SIZE, HEADER_STRUCT_IO } from './header-struct';
-import { BufferUtils } from '@/internals/buffer-utils';
+import { BufferUtils } from '../buffer-utils';
 
 describe('header struct', () => {
   test('should read the correct data', () => {

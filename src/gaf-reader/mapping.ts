@@ -1,5 +1,5 @@
-import * as Internals from '@/internals';
-import { U32 } from '@/internals/internal-types';
+import * as Internals from '../internals';
+import { U32 } from '../internals/internal-types';
 
 export type BaseSection<TLabel extends string = string, TContent = any> = {
   label: TLabel;

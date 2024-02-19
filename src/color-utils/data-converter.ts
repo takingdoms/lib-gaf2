@@ -1,5 +1,5 @@
-import { ColorData } from '@/color/color-data';
-import { ColorDataFormat } from '@/color/color-data-format';
+import { ColorData } from "../color/color-data";
+import { ColorDataFormat } from "../color/color-data-format";
 
 export interface DataConverter<
   TInputFormat extends ColorDataFormat = ColorDataFormat,

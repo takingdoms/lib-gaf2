@@ -1,5 +1,5 @@
-import { CharBuffer, Struct, U16, U32 } from '@/internals/internal-types';
-import { StructBufferIO } from '@/internals/struct-buffer-io';
+import { Struct, U16, U32, CharBuffer } from "../internal-types";
+import { StructBufferIO } from "../struct-buffer-io";
 
 export type EntryStruct = Struct<{
   frames:   U16;            // 0~2

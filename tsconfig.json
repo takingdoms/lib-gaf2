@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "moduleResolution": "Node10",
+    "moduleResolution": "node",
     "target": "ESNext",
     "module": "ESNext",
     "lib": ["ESNext"],
@@ -10,12 +10,8 @@
     "declaration": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
     "esModuleInterop": true,
     "declarationMap": true,
-    "paths": {
-      "@/*": ["./src/*"],
-    },
     "outDir": "dist"
   },
   "include": ["src"]

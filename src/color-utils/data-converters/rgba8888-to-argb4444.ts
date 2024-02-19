@@ -1,6 +1,6 @@
-import { ColorData } from '@/color/color-data';
-import { DataConverter } from '@/color-utils/data-converter';
-import { DepthConverter, DepthConverters } from '@/color-utils/depth-converters';
+import { ColorData } from "../../color/color-data";
+import { DataConverter } from "../data-converter";
+import { DepthConverter, DepthConverters } from "../depth-converters";
 
 type Options = {
   depthConvert8to4?: DepthConverter<8, 4>;

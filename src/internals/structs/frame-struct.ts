@@ -1,5 +1,5 @@
-import { Struct, U32 } from '@/internals/internal-types';
-import { StructBufferIO } from '@/internals/struct-buffer-io';
+import { Struct, U32 } from "../internal-types";
+import { StructBufferIO } from "../struct-buffer-io";
 
 export type FrameStruct = Struct<{
   ptrFrameData: U32;  // 0~4

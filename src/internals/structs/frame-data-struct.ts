@@ -1,5 +1,5 @@
-import { Struct, U8, U16, U32 } from '@/internals/internal-types';
-import { StructBufferIO } from '@/internals/struct-buffer-io';
+import { Struct, U16, U8, U32 } from "../internal-types";
+import { StructBufferIO } from "../struct-buffer-io";
 
 export type FrameDataStruct = Struct<{
   width:            U16;  // 0~2

@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { FrameStruct, FRAME_STRUCT_IO, FRAME_STRUCT_SIZE } from './frame-struct';
-import { BufferUtils } from '@/internals/buffer-utils';
+import { BufferUtils } from '../buffer-utils';
 
 describe('frame struct', () => {
   test('should read the correct data', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { ENTRY_STRUCT_IO, ENTRY_STRUCT_SIZE, EntryStruct } from './entry-struct';
-import { BufferUtils } from '@/internals/buffer-utils';
+import { BufferUtils } from '../buffer-utils';
 
 describe('entry struct', () => {
   test('should read the correct data', () => {

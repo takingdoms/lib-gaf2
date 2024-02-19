@@ -1,4 +1,4 @@
-import { GafEntry } from '@/gaf-types';
+import { GafEntry } from "../gaf-types";
 
 export type GafWriterResult = {
   buffer: Uint8Array;
