@@ -1,5 +1,5 @@
-import * as Internals from "../internals";
-import { U32 } from "../internals/internal-types";
+import * as Internals from '@/internals';
+import { U32 } from '@/internals/internal-types';
 
 export type BaseSection<TLabel extends string = string, TContent = any> = {
   label: TLabel;
@@ -9,9 +9,9 @@ export type BaseSection<TLabel extends string = string, TContent = any> = {
 };
 
 /**
- * Indicates that the section points to raw data into the original file bytes.
+ * Indicates that the section points to raw data into the bytes of the original file.
  * Technically, every other content type also comes from raw bytes. But they're small enough (
- * simple Structs) and can be easily passed as the content property.
+ * simple Structs) and can be conveniently passed into the 'content' property.
 */
 export const RawBytes = Symbol();
 export type RawBytes = typeof RawBytes;

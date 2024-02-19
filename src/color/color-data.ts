@@ -1,4 +1,4 @@
-import { ColorDataFormat } from "./color-data-format";
+import { ColorDataFormat } from './color-data-format';
 
 export type ColorData<TFormat extends ColorDataFormat = ColorDataFormat> = {
   format: TFormat;

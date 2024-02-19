@@ -1,5 +1,5 @@
-import { GafEntry } from '../gaf-types';
-import { BufferLike } from '../internals';
+import { GafEntry } from '@/gaf-types';
+import { BufferLike } from '@/internals';
 import * as Mapping from './mapping';
 
 export type GafReaderResult = {

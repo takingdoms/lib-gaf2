@@ -1,4 +1,4 @@
-import { ElementOf } from "ts-essentials";
+import { ElementOf } from 'ts-essentials';
 
 export const BIT_DEPTHS = [
   1,

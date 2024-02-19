@@ -1,6 +1,6 @@
 import { GafReader } from '.';
-import { GafEntry, GafFrame, GafFrameData, GafFrameDataSingleLayer, GafLayerData, GafLayerDataPaletteIndices, GafLayerDataRawColors } from '../gaf-types';
-import { BufferUtils, ENTRY_STRUCT_IO, ENTRY_STRUCT_SIZE, FRAME_DATA_STRUCT_IO, FRAME_DATA_STRUCT_SIZE, FRAME_STRUCT_IO, FRAME_STRUCT_SIZE, FrameDataStruct, HEADER_STRUCT_IO, HEADER_STRUCT_SIZE } from '../internals';
+import { GafEntry, GafFrame, GafFrameData, GafFrameDataSingleLayer, GafLayerData, GafLayerDataPaletteIndices, GafLayerDataRawColors } from '@/gaf-types';
+import { BufferUtils, ENTRY_STRUCT_IO, ENTRY_STRUCT_SIZE, FRAME_DATA_STRUCT_IO, FRAME_DATA_STRUCT_SIZE, FRAME_STRUCT_IO, FRAME_STRUCT_SIZE, FrameDataStruct, HEADER_STRUCT_IO, HEADER_STRUCT_SIZE } from '@/internals';
 import { Mapping } from '.';
 
 type ReadingContext = {

@@ -1,4 +1,4 @@
-import { BitDepth } from '../color/bit-depth';
+import { BitDepth } from '@/color/bit-depth';
 
 /** Converts a color component value from one bit-depth to another bit-depth */
 export interface DepthConverter<
