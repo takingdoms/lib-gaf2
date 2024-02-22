@@ -1,7 +1,7 @@
 import { GafReader } from '.';
 import { Mapping } from '.';
-import { GafEntry, GafFrame, GafFrameData, GafFrameDataSingleLayer, GafLayerData, GafLayerDataPaletteIndices, GafLayerDataRawColors } from '../gaf-types';
-import { BufferUtils, HEADER_STRUCT_IO, HEADER_STRUCT_SIZE, ENTRY_STRUCT_IO, ENTRY_STRUCT_SIZE, FRAME_STRUCT_SIZE, FRAME_STRUCT_IO, FRAME_DATA_STRUCT_IO, FRAME_DATA_STRUCT_SIZE, FrameDataStruct } from '../internals';
+import { GafEntry, GafFrame, GafFrameData, GafFrameDataSingleLayer, GafHeader, GafLayerData, GafLayerDataPaletteIndices, GafLayerDataRawColors } from '../gaf-types';
+import { BufferUtils, HEADER_STRUCT_IO, HEADER_STRUCT_SIZE, ENTRY_STRUCT_IO, ENTRY_STRUCT_SIZE, FRAME_STRUCT_SIZE, FRAME_STRUCT_IO, FRAME_DATA_STRUCT_IO, FRAME_DATA_STRUCT_SIZE, FrameDataStruct, HeaderStruct } from '../internals';
 
 type ReadingContext = {
   data: DataView;
@@ -23,15 +23,24 @@ export const readFromBuffer: GafReader = (buffer) => {
     map,
   };
 
-  const entries = readEntries(ctx);
+  const headerStruct = readHeaderStruct(ctx);
+  const header: GafHeader = {
+    idVersion: headerStruct.idVersion,
+    unknown1: headerStruct.unknown1,
+  };
+
+  const entries = readEntries(ctx, headerStruct.entries);
 
   return {
-    entries,
+    gaf: {
+      entries,
+      header,
+    },
     map,
   };
 };
 
-function readEntries(ctx: ReadingContext): GafEntry[] {
+function readHeaderStruct(ctx: ReadingContext): HeaderStruct {
   const headerStruct = HEADER_STRUCT_IO.read(ctx.data, 0);
   ctx.map.push({
     label: 'header',
@@ -40,9 +49,15 @@ function readEntries(ctx: ReadingContext): GafEntry[] {
     length: HEADER_STRUCT_SIZE,
   });
 
+  // TODO verify if the header.idVersion is valid!
+  // expected: 0x00010100
+  return headerStruct;
+}
+
+function readEntries(ctx: ReadingContext, entryCount: number): GafEntry[] {
   const entries: GafEntry[] = [];
 
-  for (let i = 0; i < headerStruct.entries; i++) {
+  for (let i = 0; i < entryCount; i++) {
     const nextEntryPointerOffset = HEADER_STRUCT_SIZE + (i * 4); // * 4 = Uint32
     const nextEntryPointer = ctx.data.getUint32(nextEntryPointerOffset, true);
     ctx.map.push({
@@ -94,6 +109,8 @@ function readEntry(ctx: ReadingContext, offset: number): GafEntry {
   return {
     frames,
     name,
+    unknown1: entryStruct.unknown1,
+    unknown2: entryStruct.unknown2,
   };
 }
 
@@ -124,6 +141,8 @@ function readFrameData(ctx: ReadingContext, offset: number): GafFrameData {
       yOffset: frameDataStruct.yPos,
       transparencyIndex: frameDataStruct.transparencyIdx,
       layerData,
+      unknown2: frameDataStruct.unknown2,
+      unknown3: frameDataStruct.unknown3,
     };
   }
 

@@ -1,9 +1,9 @@
-import { GafEntry } from '../gaf-types';
+import { GafEntry, GafResult } from '../gaf-types';
 import { BufferLike } from '../internals';
 import * as Mapping from './mapping';
 
 export type GafReaderResult = {
-  entries: GafEntry[];
+  gaf: GafResult;
   map: Mapping.Section[];
 };
 
