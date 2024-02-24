@@ -1,11 +1,9 @@
-import { GafEntry } from "../gaf-types";
+import { GafResult } from "../gaf-types";
 
 export type GafWriterResult = {
   buffer: Uint8Array;
 };
 
-export type GafWriter = (entries: GafEntry[]) => GafWriterResult;
+export type GafWriter = (gaf: GafResult) => GafWriterResult;
 
-export const writeToBuffer: GafWriter = (entries) => {
-  throw 'TODO';
-};
+export { writeToBuffer } from './write-to-buffer';

@@ -38,7 +38,7 @@ describe('header struct', () => {
     const outputBuffer = new Uint8Array(HEADER_STRUCT_SIZE);
     const outputView = BufferUtils.createView(outputBuffer);
 
-    HEADER_STRUCT_IO.write(struct, outputView, 0);
+    HEADER_STRUCT_IO.write(outputView, 0, struct);
 
     const idVersionBytesU32 = outputView.getUint32(0, true);
     const entriesBytesU32 = outputView.getUint32(4, true);

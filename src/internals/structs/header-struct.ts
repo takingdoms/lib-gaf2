@@ -15,7 +15,7 @@ export const HEADER_STRUCT_IO: StructBufferIO<HeaderStruct> = {
     entries:    buffer.getUint32(offset + 4, true),
     unknown1:   buffer.getUint32(offset + 8, true),
   }),
-  write: (struct, buffer, offset) => {
+  write: (buffer, offset, struct) => {
     buffer.setUint32(offset + 0, struct.idVersion,  true);
     buffer.setUint32(offset + 4, struct.entries,    true);
     buffer.setUint32(offset + 8, struct.unknown1,   true);

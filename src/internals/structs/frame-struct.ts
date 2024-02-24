@@ -13,7 +13,7 @@ export const FRAME_STRUCT_IO: StructBufferIO<FrameStruct> = {
     ptrFrameData: buffer.getUint32(offset + 0, true),
     duration:     buffer.getUint32(offset + 4, true),
   }),
-  write: (struct, buffer, offset) => {
+  write: (buffer, offset, struct) => {
     buffer.setUint32(offset + 0, struct.ptrFrameData, true);
     buffer.setUint32(offset + 4, struct.duration, true);
   },

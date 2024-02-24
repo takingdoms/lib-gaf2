@@ -29,7 +29,7 @@ export const readFromBuffer: GafReader = (buffer) => {
     unknown1: headerStruct.unknown1,
   };
 
-  const entries = readEntries(ctx, headerStruct.entries);
+  const entries = readEntries(ctx, HEADER_STRUCT_SIZE, headerStruct.entries);
 
   return {
     gaf: {
@@ -54,11 +54,11 @@ function readHeaderStruct(ctx: ReadingContext): HeaderStruct {
   return headerStruct;
 }
 
-function readEntries(ctx: ReadingContext, entryCount: number): GafEntry[] {
+function readEntries(ctx: ReadingContext, offset: number, entryCount: number): GafEntry[] {
   const entries: GafEntry[] = [];
 
   for (let i = 0; i < entryCount; i++) {
-    const nextEntryPointerOffset = HEADER_STRUCT_SIZE + (i * 4); // * 4 = Uint32
+    const nextEntryPointerOffset = offset + (i * 4); // * 4 = Uint32
     const nextEntryPointer = ctx.data.getUint32(nextEntryPointerOffset, true);
     ctx.map.push({
       label: 'entry_pointer',
@@ -205,7 +205,8 @@ function readUncompressedLayerData(
   width: number,
   height: number,
 ): GafLayerDataPaletteIndices {
-  const indices = new Uint8Array(ctx.data.buffer, offset, width * height);
+  // const indices = new Uint8Array(ctx.data.buffer, offset, width * height);
+  const indices = BufferUtils.copyBytes(ctx.data, offset, width * height);
 
   ctx.map.push({
     label: 'uncompressed_palette_indices',
@@ -294,7 +295,8 @@ function readRawColors(
   format: GafLayerDataRawColors['colorData']['format'],
 ): GafLayerDataRawColors {
   // * 2 because each pixel uses 16 bits (as either '4444' or '1555' adds up to 16)
-  const bytes = new Uint8Array(ctx.data.buffer, offset, width * height * 2);
+  // const bytes = new Uint8Array(ctx.data.buffer, offset, width * height * 2);
+  const bytes = BufferUtils.copyBytes(ctx.data, offset, width * height * 2);
 
   ctx.map.push({
     label: 'raw_colors',

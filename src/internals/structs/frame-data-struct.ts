@@ -29,7 +29,7 @@ export const FRAME_DATA_STRUCT_IO: StructBufferIO<FrameDataStruct> = {
     ptrFrameData:     buffer.getUint32(offset + 16, true),
     unknown3:         buffer.getUint32(offset + 20, true),
   }),
-  write: (struct, buffer, offset) => {
+  write: (buffer, offset, struct) => {
     buffer.setUint16(offset + 0,  struct.width,           true);
     buffer.setUint16(offset + 2,  struct.height,          true);
     buffer.setUint16(offset + 4,  struct.xPos,            true);

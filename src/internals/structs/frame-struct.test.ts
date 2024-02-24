@@ -34,7 +34,7 @@ describe('frame struct', () => {
     const outputBuffer = new Uint8Array(FRAME_STRUCT_SIZE);
     const outputView = BufferUtils.createView(outputBuffer);
 
-    FRAME_STRUCT_IO.write(struct, outputView, 0);
+    FRAME_STRUCT_IO.write(outputView, 0, struct);
 
     const ptrFrameDataBytesU32 = outputView.getUint32(0, true);
     const durationBytesU32 = outputView.getUint32(4, true);

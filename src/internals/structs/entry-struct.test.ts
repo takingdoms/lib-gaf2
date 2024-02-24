@@ -45,7 +45,7 @@ describe('entry struct', () => {
     const outputBuffer = new Uint8Array(ENTRY_STRUCT_SIZE);
     const outputView = BufferUtils.createView(outputBuffer);
 
-    ENTRY_STRUCT_IO.write(struct, outputView, 0);
+    ENTRY_STRUCT_IO.write(outputView, 0, struct);
 
     const framesBytesU16 = outputView.getUint16(0, true);
     const unknown1BytesU16 = outputView.getUint16(2, true);

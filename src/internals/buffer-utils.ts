@@ -5,6 +5,11 @@ export module BufferUtils {
     return new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
   }
 
+  export function copyBytes(view: DataView, offset: number, length: number): Uint8Array {
+    const slice = view.buffer.slice(view.byteOffset + offset, view.byteOffset + offset + length);
+    return new Uint8Array(slice);
+  }
+
   const textDecoder = new TextDecoder('ascii');
 
   export function readString<T extends number>(
@@ -34,18 +39,25 @@ export module BufferUtils {
     const data = textEncoder.encode(string);
 
     if (data.length === maxLength) {
-      data[maxLength - 1] = 0; // null termination char
+      data[maxLength - 1] = 0; // null terminator
       return data;
     }
 
     if (data.length > maxLength) {
-      // TODO warn that the string will be cut-off?
+      const result = data.slice(0, maxLength);
+      result[maxLength - 1] = 0; // null terminator
+
+      console.warn(`String is being cut off!`);
+      console.warn(`Before: ${textDecoder.decode(data)}`);
+      console.warn(`After: ${textDecoder.decode(result)}`)
+
+      return result;
     }
 
     const charBuffer: CharBuffer<T> = new Uint8Array(maxLength);
 
     charBuffer.set(data, 0);
-    charBuffer[maxLength - 1] = 0; // null termination char
+    charBuffer[maxLength - 1] = 0; // null terminator
 
     return charBuffer;
   }

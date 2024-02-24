@@ -66,7 +66,7 @@ describe('frame data struct', () => {
     const outputBuffer = new Uint8Array(FRAME_DATA_STRUCT_SIZE);
     const outputView = BufferUtils.createView(outputBuffer);
 
-    FRAME_DATA_STRUCT_IO.write(struct, outputView, 0);
+    FRAME_DATA_STRUCT_IO.write(outputView, 0, struct);
 
     const widthBytesU16 = outputView.getUint16(0, true);
     const heightBytesU16 = outputView.getUint16(2, true);
