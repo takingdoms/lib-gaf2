@@ -12,5 +12,6 @@ export default defineConfig({
       name: 'LibGaf',
       fileName: 'lib-gaf',
     },
+    sourcemap: true,
   },
 });
