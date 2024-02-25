@@ -232,6 +232,17 @@ function readCompressedLayerData(
 ): GafLayerDataPaletteIndices {
   const { data } = ctx;
   const startOffset = offset;
+  let endOffset = -1; // last offset read from (inclusive); used purely for mapping purposes
+
+  const getUint16 = (at: number) => {
+    endOffset = Math.max(endOffset, at + 1); // + 1 because Uint16 reads 2 bytes
+    return data.getUint16(at, true);
+  };
+
+  const getUint8 = (at: number) => {
+    endOffset = Math.max(endOffset, at);
+    return data.getUint8(at);
+  };
 
   const indices = new Uint8Array(width * height);
   indices.fill(transparencyIdx);
@@ -241,14 +252,14 @@ function readCompressedLayerData(
   };
 
   for (let y = 0; y < height; y++) {
-    const bytes = data.getUint16(offset, true); // aka lineLength
+    const bytes = getUint16(offset); // aka lineLength
     offset += 2; // sizeof Uint16
 
     let count = 0;
     let x = 0;
 
     while (count < bytes) {
-      const mask = data.getUint8(offset + count++);
+      const mask = getUint8(offset + count++);
 
       if ((mask & TRANSPARENCY_MASK) === TRANSPARENCY_MASK) {
         x += (mask >> 1);
@@ -256,14 +267,14 @@ function readCompressedLayerData(
       else if ((mask & REPEAT_MASK) === REPEAT_MASK) {
         let repeat = (mask >> 2) + 1;
         while (repeat--) {
-          putPixel(x++, y, data.getUint8(offset + count));
+          putPixel(x++, y, getUint8(offset + count));
         }
         count++;
       }
       else {
         let read = (mask >> 2) + 1;
         while (read--) {
-          putPixel(x++, y, data.getUint8(offset + count++));
+          putPixel(x++, y, getUint8(offset + count++));
         }
       }
     }
@@ -271,12 +282,14 @@ function readCompressedLayerData(
     offset += bytes;
   }
 
-  ctx.map.push({
-    label: 'compressed_palette_indices',
-    content: Mapping.RawBytes,
-    offset: startOffset,
-    length: width * height,
-  });
+  if (endOffset !== -1) {
+    ctx.map.push({
+      label: 'compressed_palette_indices',
+      content: Mapping.RawBytes,
+      offset: startOffset,
+      length: endOffset - startOffset + 1,
+    });
+  }
 
   return {
     kind: 'palette-idx',
