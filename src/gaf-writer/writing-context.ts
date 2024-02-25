@@ -1,10 +1,13 @@
 import { GafLayerData, GafLayerDataRawColors } from "../gaf-types";
+import { LayerDataCache } from "./layer-data-cache";
 
 export class WritingContext {
   private segments: Uint8Array[] = [];
   private totalSize = 0;
   private format: string | undefined = undefined;
   private rawColorsFormat: string | undefined = undefined;
+
+  public readonly layerDataCache = new LayerDataCache();
 
   pushSegment(buffer: Uint8Array) {
     this.segments.push(buffer);

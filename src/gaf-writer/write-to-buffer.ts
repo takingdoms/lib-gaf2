@@ -1,5 +1,5 @@
 import { GafWriter } from ".";
-import { GafEntry, GafFrameData, GafFrameDataSingleLayer, GafResult } from "../gaf-types";
+import { GafEntry, GafFrameData, GafFrameDataSingleLayer, GafLayerDataPaletteIndices, GafLayerDataRawColors, GafResult } from "../gaf-types";
 import { BufferUtils, ENTRY_STRUCT_IO, ENTRY_STRUCT_SIZE, FRAME_DATA_STRUCT_IO, FRAME_DATA_STRUCT_SIZE, FRAME_STRUCT_IO, FRAME_STRUCT_SIZE, FrameDataStruct, HEADER_STRUCT_IO, HEADER_STRUCT_SIZE } from "../internals";
 import { compressLayerData } from "./compress-layer-data";
 import { WritingContext } from "./writing-context";
@@ -170,46 +170,87 @@ function writeFrameData(ctx: WritingContext, frameData: GafFrameData): number {
   return currentPosition;
 }
 
+type WrittenLayerData = {
+  ptrFrameData: number;
+  compressionFlag: number;
+};
+
 function writeSingleLayerData(
   ctx: WritingContext,
   frameData: GafFrameDataSingleLayer,
-): {
-  ptrFrameData: number;
-  compressionFlag: number;
-} {
+): WrittenLayerData {
+  if (frameData.layerData.kind === 'palette-idx') { // aka regular .gaf
+    return writeSingleLayerDataOfPalette(
+      ctx,
+      frameData.layerData,
+      frameData.width,
+      frameData.transparencyIndex,
+    );
+  }
+  // else: 'raw-colors' aka .taf
+
+  return writeSingleLayerDataOfColors(ctx, frameData.layerData);
+}
+
+function writeSingleLayerDataOfPalette(
+  ctx: WritingContext,
+  layerData: GafLayerDataPaletteIndices,
+  width: number,
+  transparencyIdx: number,
+): WrittenLayerData {
+  ctx.validateFormat('palette-idx');
+
+  const cachedLayerData = ctx.layerDataCache.get(layerData, width);
+
+  // the layerData.kind verification is PURELY for type narrowing
+  if (cachedLayerData !== undefined && cachedLayerData.layerData.kind === 'palette-idx') {
+    return {
+      ptrFrameData: cachedLayerData.offset,
+      compressionFlag: cachedLayerData.layerData.decompressed ? 1 : 0,
+    };
+  }
+
   const currentPosition = ctx.getCurrentSize();
-  let compressionFlag: number;
+  const compressionFlag = layerData.decompressed ? 1 : 0;
 
-  const layerData = frameData.layerData;
-
-  if (layerData.kind === 'palette-idx') { // aka regular .gaf
-    ctx.validateFormat('palette-idx');
-
-    if (layerData.decompressed) {
-      compressionFlag = 1;
-
-      const compressedIndices = compressLayerData(
-        layerData.indices,
-        frameData.width,
-        frameData.transparencyIndex,
-      );
-
-      ctx.pushSegment(compressedIndices);
-    }
-    else {
-      compressionFlag = 0;
-
-      ctx.pushSegment(layerData.indices);
-    }
+  if (compressionFlag === 1) {
+    const compressedIndices = compressLayerData(layerData.indices, width, transparencyIdx);
+    ctx.pushSegment(compressedIndices);
   }
-  else { // 'raw-colors' aka .taf
-    const colorData = layerData.colorData;
-    compressionFlag = colorData.format === 'argb4444' ? 4 : 5;
-
-    ctx.validateFormat('raw-colors');
-    ctx.validateRawColorsFormat(colorData.format);
-    ctx.pushSegment(colorData.bytes);
+  else {
+    ctx.pushSegment(layerData.indices);
   }
+
+  ctx.layerDataCache.set(currentPosition, layerData, width);
+
+  return {
+    ptrFrameData: currentPosition,
+    compressionFlag,
+  };
+}
+
+function writeSingleLayerDataOfColors(
+  ctx: WritingContext,
+  layerData: GafLayerDataRawColors,
+): WrittenLayerData {
+  ctx.validateFormat('raw-colors');
+  ctx.validateRawColorsFormat(layerData.colorData.format);
+
+  const compressionFlag = layerData.colorData.format === 'argb4444' ? 4 : 5;
+
+  const cachedLayerData = ctx.layerDataCache.get(layerData);
+
+  if (cachedLayerData !== undefined) {
+    return {
+      ptrFrameData: cachedLayerData.offset,
+      compressionFlag,
+    };
+  }
+
+  const currentPosition = ctx.getCurrentSize();
+  ctx.pushSegment(layerData.colorData.bytes);
+
+  ctx.layerDataCache.set(currentPosition, layerData);
 
   return {
     ptrFrameData: currentPosition,
