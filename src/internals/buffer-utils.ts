@@ -1,13 +1,40 @@
 import { CharBuffer } from './internal-types';
 
-export module BufferUtils {
+export namespace BufferUtils {
   export function createView(buffer: Uint8Array | Uint16Array | Uint32Array): DataView {
-    return new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+    return new DataView(
+      buffer.buffer,
+      buffer.byteOffset,
+      buffer.byteLength,
+    );
+  }
+
+  export function createViewSlice(
+    buffer: Uint8Array | Uint16Array | Uint32Array,
+    offset: number,
+    length: number,
+  ): DataView {
+    return new DataView(
+      buffer.buffer,
+      buffer.byteOffset + offset,
+      length,
+    );
   }
 
   export function copyBytes(view: DataView, offset: number, length: number): Uint8Array {
-    const slice = view.buffer.slice(view.byteOffset + offset, view.byteOffset + offset + length);
+    const slice = view.buffer.slice(
+      view.byteOffset + offset,
+      view.byteOffset + offset + length,
+    );
+
     return new Uint8Array(slice);
+  }
+
+  export function createSlice(buffer: Uint8Array, offset: number, length: number): Uint8Array {
+    return buffer.slice(
+      buffer.byteOffset + offset,
+      buffer.byteOffset + offset + length,
+    );
   }
 
   const textDecoder = new TextDecoder('ascii');

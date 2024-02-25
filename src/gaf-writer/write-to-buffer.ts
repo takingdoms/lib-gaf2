@@ -1,6 +1,7 @@
 import { GafWriter } from ".";
 import { GafEntry, GafFrameData, GafFrameDataSingleLayer, GafResult } from "../gaf-types";
 import { BufferUtils, ENTRY_STRUCT_IO, ENTRY_STRUCT_SIZE, FRAME_DATA_STRUCT_IO, FRAME_DATA_STRUCT_SIZE, FRAME_STRUCT_IO, FRAME_STRUCT_SIZE, FrameDataStruct, HEADER_STRUCT_IO, HEADER_STRUCT_SIZE } from "../internals";
+import { compressLayerData } from "./compress-layer-data";
 import { WritingContext } from "./writing-context";
 
 /*type WritingContext = {
@@ -124,18 +125,18 @@ function writeFrameData(ctx: WritingContext, frameData: GafFrameData): number {
     return currentPosition;
   }
 
-  /*
-  what happens to the other stuff (like width, height, etc) when framePointers is not 0?
-  aka when there are sub-layers? TODO: find out ;)
-  ANSWER: looks like it uses the same stuff (width, height, etc) from its first sub-frame...
-  but perhaps these things can be just ignred? TODO find out ;)
-  because if they can be ignored, i can jsut fill them in with "0"s. otherwise, i'll probably
-  need to change the type "GafFrameDataMultiLayer" to also include all the properties from
-  "GafFrameDataSingleLayer"
-  */
   // \/ this means the list of pointers to sub-layers will come right after the frame data itself
   const ptrFrameData = ctx.getCurrentSize();
 
+  /*
+  what happens to the other stuff (like width, height, etc) when framePointers is not 0?
+  aka when there are sub-layers? TODO: find out ;)
+  ANSWER: it LOOKS like it uses the same stuff (width, height, etc) from its first sub-frame...
+  but perhaps these things can be just ignored? TODO find out ;)
+  because if they can be ignored, i can just fill them in with "0"s. otherwise, i'll probably
+  need to change the type "GafFrameDataMultiLayer" to also include all the properties from
+  "GafFrameDataSingleLayer"
+  */
   const frameDataStruct: FrameDataStruct = {
     // most data here PROBABLY doesn't matter since this is a multi-layered frameData
     width: 0,
@@ -169,8 +170,6 @@ function writeFrameData(ctx: WritingContext, frameData: GafFrameData): number {
   return currentPosition;
 }
 
-const NEVER_COMPRESS: boolean = true;
-
 function writeSingleLayerData(
   ctx: WritingContext,
   frameData: GafFrameDataSingleLayer,
@@ -186,11 +185,16 @@ function writeSingleLayerData(
   if (layerData.kind === 'palette-idx') { // aka regular .gaf
     ctx.validateFormat('palette-idx');
 
-    if (layerData.decompressed && !NEVER_COMPRESS) { // TODO
+    if (layerData.decompressed) {
       compressionFlag = 1;
 
-      const buffer = compressLayerData(layerData.indices, frameData);
-      ctx.pushSegment(buffer);
+      const compressedIndices = compressLayerData(
+        layerData.indices,
+        frameData.width,
+        frameData.transparencyIndex,
+      );
+
+      ctx.pushSegment(compressedIndices);
     }
     else {
       compressionFlag = 0;
@@ -211,66 +215,4 @@ function writeSingleLayerData(
     ptrFrameData: currentPosition,
     compressionFlag,
   };
-}
-
-const TRANSPARENCY_MASK = 0x01;
-const REPEAT_MASK = 0x02;
-
-function compressLayerData(
-  indices: Uint8Array,
-  frameData: GafFrameDataSingleLayer,
-): Uint8Array {
-  console.log(`COMPRESSING LAYER DATA!`);
-  throw 'TODO compress layer data';
-  /*const { width, height, transparencyIndex: transparencyIdx } = frameData;
-  const compressedData: number[] = [];
-
-  for (let y = 0; y < height; y++) {
-    let x = 0;
-    let count = 0;
-    let lineData: number[] = [];
-
-    while (x < width) {
-      let transparentCount = 0;
-      while (x < width && indices[x + y * width] === transparencyIdx && transparentCount < 0x7FFF) {
-        transparentCount++;
-        x++;
-      }
-      if (transparentCount > 0) {
-        lineData.push((transparentCount << 1) | TRANSPARENCY_MASK);
-        count++;
-      }
-
-      let repeatCount = 0;
-      while (x < width - 1 && indices[x + y * width] === indices[x + 1 + y * width] && repeatCount < 0x3FFF) {
-        repeatCount++;
-        x++;
-      }
-      if (repeatCount > 0) {
-        lineData.push((repeatCount << 2) | REPEAT_MASK);
-        lineData.push(indices[x + y * width]);
-        count += 2;
-        x++;
-      }
-
-      let uniqueCount = 0;
-      while (x < width && (uniqueCount < 0x3FFF && (x === 0 || indices[x + y * width] !== indices[x - 1 + y * width]))) {
-        uniqueCount++;
-        x++;
-      }
-      if (uniqueCount > 0) {
-        lineData.push((uniqueCount << 2) | 0);
-        for (let i = x - uniqueCount; i < x; i++) {
-          lineData.push(indices[i + y * width]);
-        }
-        count += 2 + uniqueCount;
-      }
-    }
-
-    compressedData.push(count & 0xFF);
-    compressedData.push((count >> 8) & 0xFF);
-    compressedData.push(...lineData);
-  }
-
-  return new Uint8Array(compressedData);*/
 }
