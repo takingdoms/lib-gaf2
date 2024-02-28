@@ -1,7 +1,7 @@
 import { GafReader } from '.';
 import { Mapping } from '.';
 import { REPEAT_MASK, TRANSPARENCY_MASK } from '../constants';
-import { GafEntry, GafFrame, GafFrameData, GafFrameDataSingleLayer, GafHeader, GafLayerData, GafLayerDataPaletteIndices, GafLayerDataRawColors } from '../gaf-types';
+import { BaseGafFrameData, GafEntry, GafFrame, GafFrameData, GafFrameDataSingleLayer, GafHeader, GafLayerData, GafLayerDataPaletteIndices, GafLayerDataRawColors } from '../gaf-types';
 import { BufferUtils, HEADER_STRUCT_IO, HEADER_STRUCT_SIZE, ENTRY_STRUCT_IO, ENTRY_STRUCT_SIZE, FRAME_STRUCT_SIZE, FRAME_STRUCT_IO, FRAME_DATA_STRUCT_IO, FRAME_DATA_STRUCT_SIZE, FrameDataStruct, HeaderStruct } from '../internals';
 
 type ReadingContext = {
@@ -128,6 +128,16 @@ function readFrameData(ctx: ReadingContext, offset: number): GafFrameData {
     length: FRAME_DATA_STRUCT_SIZE,
   });
 
+  const base: BaseGafFrameData = {
+    width: frameDataStruct.width,
+    height: frameDataStruct.height,
+    xOffset: frameDataStruct.xPos,
+    yOffset: frameDataStruct.yPos,
+    transparencyIndex: frameDataStruct.transparencyIdx,
+    unknown2: frameDataStruct.unknown2,
+    unknown3: frameDataStruct.unknown3,
+  };
+
   if (
     frameDataStruct.framePointers === 0 ||
     frameDataStruct.framePointers === FRAME_POINTERS_SINGLE
@@ -135,15 +145,9 @@ function readFrameData(ctx: ReadingContext, offset: number): GafFrameData {
     const layerData = readLayerData(ctx, frameDataStruct);
 
     return {
+      ...base,
       kind: 'single',
-      width: frameDataStruct.width,
-      height: frameDataStruct.height,
-      xOffset: frameDataStruct.xPos,
-      yOffset: frameDataStruct.yPos,
-      transparencyIndex: frameDataStruct.transparencyIdx,
       layerData,
-      unknown2: frameDataStruct.unknown2,
-      unknown3: frameDataStruct.unknown3,
     };
   }
 
@@ -173,6 +177,7 @@ function readFrameData(ctx: ReadingContext, offset: number): GafFrameData {
   }
 
   return {
+    ...base,
     kind: 'multi',
     layers,
   };

@@ -4,11 +4,6 @@ import { BufferUtils, ENTRY_STRUCT_IO, ENTRY_STRUCT_SIZE, FRAME_DATA_STRUCT_IO, 
 import { compressLayerData } from "./compress-layer-data";
 import { WritingContext } from "./writing-context";
 
-/*type WritingContext = {
-  segments: Uint8Array[];
-  cursor: number;
-};*/
-
 export const writeToBuffer: GafWriter = (gaf: GafResult) => {
   const ctx = new WritingContext();
 
@@ -104,20 +99,24 @@ function writeFrameData(ctx: WritingContext, frameData: GafFrameData): number {
   const currentPosition = ctx.getCurrentSize();
   ctx.pushSegment(frameDataBuffer);
 
+  const base = {
+    width: frameData.width,
+    height: frameData.height,
+    xPos: frameData.xOffset,
+    yPos: frameData.yOffset,
+    transparencyIdx: frameData.transparencyIndex,
+    unknown2: frameData.unknown2,
+    unknown3: frameData.unknown3,
+  } as const;
+
   if (frameData.kind === 'single') {
     const { ptrFrameData, compressionFlag } = writeSingleLayerData(ctx, frameData);
 
     const frameDataStruct: FrameDataStruct = {
-      width: frameData.width,
-      height: frameData.height,
-      xPos: frameData.xOffset,
-      yPos: frameData.yOffset,
-      transparencyIdx: frameData.transparencyIndex,
+      ...base,
       compressed: compressionFlag,
       framePointers: 0,
-      unknown2: frameData.unknown2,
       ptrFrameData,
-      unknown3: frameData.unknown3,
     };
 
     FRAME_DATA_STRUCT_IO.write(frameDataBufferView, 0, frameDataStruct);
@@ -128,6 +127,7 @@ function writeFrameData(ctx: WritingContext, frameData: GafFrameData): number {
   // \/ this means the list of pointers to sub-layers will come right after the frame data itself
   const ptrFrameData = ctx.getCurrentSize();
 
+  // TODO Find out if this \/ isn't reason for the crash when rebuilding everything
   /*
   what happens to the other stuff (like width, height, etc) when framePointers is not 0?
   aka when there are sub-layers? TODO: find out ;)
@@ -138,17 +138,11 @@ function writeFrameData(ctx: WritingContext, frameData: GafFrameData): number {
   "GafFrameDataSingleLayer"
   */
   const frameDataStruct: FrameDataStruct = {
-    // most data here PROBABLY doesn't matter since this is a multi-layered frameData
-    width: 0,
-    height: 0,
-    xPos: 0,
-    yPos: 0,
-    transparencyIdx: 0,
-    compressed: 0,
+    // most data from 'base' PROBABLY doesn't matter since this is a multi-layered frameData
+    ...base,
+    compressed: 0, // probably CANNOT matter since ptrFrameData doesn't point to data
     framePointers: frameData.layers.length, // <-- matters
-    unknown2: 0,
     ptrFrameData,                           // <-- matters
-    unknown3: 0,
   };
 
   FRAME_DATA_STRUCT_IO.write(frameDataBufferView, 0, frameDataStruct);

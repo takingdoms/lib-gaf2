@@ -22,32 +22,28 @@ export type GafFrame = {
   frameData: GafFrameData;
 };
 
-export type GafFrameData = GafFrameDataSingleLayer | GafFrameDataMultiLayer;
-
-/**
- * The frame alone contains all the data.
- * Was created from a GAF_FRAME_DATA_STRUCT where the FramePointers field was == 0.
- */
-export type GafFrameDataSingleLayer = {
-  kind: 'single';
+export type BaseGafFrameData = {
   width: number;
   height: number;
   xOffset: number;
   yOffset: number;
   transparencyIndex: number; // used only when LayerData is of type LayerDataPaletteIndices
-  layerData: GafLayerData;
   unknown2: number; // normally 0x00000000
   unknown3: number; // varies!!!
 };
 
-/**
- * The frame is composited from multiple sub-frames.
- * Was created from a GAF_FRAME_DATA_STRUCT where the FramePointers field was != 0.
- */
-export type GafFrameDataMultiLayer = {
+export type GafFrameDataSingleLayer = BaseGafFrameData & {
+  kind: 'single';
+  layerData: GafLayerData;
+};
+
+/// BaseGafFrameData appears to be useless here but it's still included for struct consistency
+export type GafFrameDataMultiLayer = BaseGafFrameData & {
   kind: 'multi';
   layers: GafFrameDataSingleLayer[];
 };
+
+export type GafFrameData = GafFrameDataSingleLayer | GafFrameDataMultiLayer;
 
 export type GafLayerData =
   | GafLayerDataPaletteIndices
