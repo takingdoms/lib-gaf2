@@ -1,8 +1,10 @@
 import { ColorData } from "../color/color-data";
 
-export type GafResult = {
+export type GafFormat = 'gaf' | 'taf';
+
+export type GafResult<T extends GafFormat = GafFormat> = {
   header: GafHeader;
-  entries: GafEntry[];
+  entries: GafEntry<T>[];
 };
 
 export type GafHeader = {
@@ -10,16 +12,16 @@ export type GafHeader = {
   unknown1: number;   // normally 0x00000000
 };
 
-export type GafEntry = {
+export type GafEntry<T extends GafFormat = GafFormat> = {
   name: string;
-  frames: GafFrame[];
+  frames: GafFrame<T>[];
   unknown1: number;   // normally 0x0001
   unknown2: number;   // normaly 0x00000001
 };
 
-export type GafFrame = {
+export type GafFrame<T extends GafFormat = GafFormat> = {
   duration: number;
-  frameData: GafFrameData;
+  frameData: GafFrameData<T>;
 };
 
 export type BaseGafFrameData = {
@@ -32,22 +34,25 @@ export type BaseGafFrameData = {
   unknown3: number; // varies!!!
 };
 
-export type GafFrameDataSingleLayer = BaseGafFrameData & {
+export type GafFrameDataSingleLayer<T extends GafFormat = GafFormat> = BaseGafFrameData & {
   kind: 'single';
-  layerData: GafLayerData;
+  layerData: GafLayerData<T>;
 };
 
 /// BaseGafFrameData appears to be useless here but it's still included for struct consistency
-export type GafFrameDataMultiLayer = BaseGafFrameData & {
+export type GafFrameDataMultiLayer<T extends GafFormat = GafFormat> = BaseGafFrameData & {
   kind: 'multi';
-  layers: GafFrameDataSingleLayer[];
+  layers: GafFrameDataSingleLayer<T>[];
 };
 
-export type GafFrameData = GafFrameDataSingleLayer | GafFrameDataMultiLayer;
+export type GafFrameData<T extends GafFormat = GafFormat> =
+  | GafFrameDataSingleLayer<T>
+  | GafFrameDataMultiLayer<T>;
 
-export type GafLayerData =
-  | GafLayerDataPaletteIndices
-  | GafLayerDataRawColors;
+export type GafLayerData<T extends GafFormat = GafFormat> =
+  T extends 'gaf' ? GafLayerDataPaletteIndices :
+  T extends 'taf' ? GafLayerDataRawColors :
+  never;
 
 export type GafLayerDataPaletteIndices = {
   kind: 'palette-idx';
