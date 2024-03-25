@@ -7,8 +7,8 @@ describe('frame data struct', () => {
     const expectedStruct: FrameDataStruct = {
       width:            0x1234,     // 0~2
       height:           0x5678,     // 2~4
-      xPos:             0xA1B2,     // 4~6
-      yPos:             0xC1D2,     // 6~8
+      xPos:             0x1234,     // 4~6
+      yPos:             0x4321,     // 6~8
       transparencyIdx:  0xAB,       // 8~9
       compressed:       0xCD,       // 9~10
       framePointers:    0xF1F2,     // 10~12
@@ -53,8 +53,8 @@ describe('frame data struct', () => {
     const struct: FrameDataStruct = {
       width:            0x1234,     // 0~2
       height:           0x5678,     // 2~4
-      xPos:             0xA1B2,     // 4~6
-      yPos:             0xC1D2,     // 6~8
+      xPos:             0x4321,     // 4~6
+      yPos:             0x1234,     // 6~8
       transparencyIdx:  0xAB,       // 8~9
       compressed:       0xCD,       // 9~10
       framePointers:    0xF1F2,     // 10~12
@@ -70,8 +70,8 @@ describe('frame data struct', () => {
 
     const widthBytesU16 = outputView.getUint16(0, true);
     const heightBytesU16 = outputView.getUint16(2, true);
-    const xPosBytesU16 = outputView.getUint16(4, true);
-    const yPosBytesU16 = outputView.getUint16(6, true);
+    const xPosBytesI16 = outputView.getInt16(4, true);
+    const yPosBytesI16 = outputView.getInt16(6, true);
     const transparencyIdxBytesU8 = outputView.getUint8(8);
     const compressedBytesU8 = outputView.getUint8(9);
     const framePointersBytesU16 = outputView.getUint16(10, true);
@@ -81,8 +81,8 @@ describe('frame data struct', () => {
 
     expect(widthBytesU16).toBe(struct.width);
     expect(heightBytesU16).toBe(struct.height);
-    expect(xPosBytesU16).toBe(struct.xPos);
-    expect(yPosBytesU16).toBe(struct.yPos);
+    expect(xPosBytesI16).toBe(struct.xPos);
+    expect(yPosBytesI16).toBe(struct.yPos);
     expect(transparencyIdxBytesU8).toBe(struct.transparencyIdx);
     expect(compressedBytesU8).toBe(struct.compressed);
     expect(framePointersBytesU16).toBe(struct.framePointers);

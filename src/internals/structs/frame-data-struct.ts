@@ -20,8 +20,8 @@ export const FRAME_DATA_STRUCT_IO: StructBufferIO<FrameDataStruct> = {
   read: (buffer, offset) => ({
     width:            buffer.getUint16(offset + 0, true),
     height:           buffer.getUint16(offset + 2, true),
-    xPos:             buffer.getUint16(offset + 4, true),
-    yPos:             buffer.getUint16(offset + 6, true),
+    xPos:             buffer.getInt16(offset + 4, true),
+    yPos:             buffer.getInt16(offset + 6, true),
     transparencyIdx:  buffer.getUint8 (offset + 8),
     compressed:       buffer.getUint8 (offset + 9),
     framePointers:    buffer.getUint16(offset + 10, true),
@@ -32,8 +32,8 @@ export const FRAME_DATA_STRUCT_IO: StructBufferIO<FrameDataStruct> = {
   write: (buffer, offset, struct) => {
     buffer.setUint16(offset + 0,  struct.width,           true);
     buffer.setUint16(offset + 2,  struct.height,          true);
-    buffer.setUint16(offset + 4,  struct.xPos,            true);
-    buffer.setUint16(offset + 6,  struct.yPos,            true);
+    buffer.setInt16 (offset + 4,  struct.xPos,            true);
+    buffer.setInt16 (offset + 6,  struct.yPos,            true);
     buffer.setUint8 (offset + 8,  struct.transparencyIdx);
     buffer.setUint8 (offset + 9,  struct.compressed);
     buffer.setUint16(offset + 10, struct.framePointers,   true);
