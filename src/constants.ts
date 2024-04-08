@@ -1,4 +1,8 @@
 export const TRANSPARENCY_MASK = 0x01;
 export const REPEAT_MASK = 0x02;
 
-// TODO also add stuff like default unknown* values and idVersion
+export const USUAL_HEADER_ID_VERSION = 0x00010100;
+export const USUAL_HEADER_UNKNOWN1 = 0x00000000;
+
+export const USUAL_ENTRY_UNKNOWN1 = 0x0001;
+export const USUAL_ENTRY_UNKNOWN2 = 0x00000000;
