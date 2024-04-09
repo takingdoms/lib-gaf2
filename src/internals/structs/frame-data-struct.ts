@@ -1,11 +1,11 @@
-import { Struct, U16, U8, U32 } from "../internal-types";
+import { Struct, U16, U8, U32, I16 } from "../internal-types";
 import { StructBufferIO } from "../struct-buffer-io";
 
 export type FrameDataStruct = Struct<{
   width:            U16;  // 0~2
   height:           U16;  // 2~4
-  xPos:             U16;  // 4~6
-  yPos:             U16;  // 6~8
+  xPos:             I16;  // 4~6
+  yPos:             I16;  // 6~8
   transparencyIdx:  U8;   // 8~9
   compressed:       U8;   // 9~10
   framePointers:    U16;  // 10~12
