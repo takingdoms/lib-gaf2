@@ -27,10 +27,16 @@ export const convertRGBA8888ToARGB1555: DataConverter<'rgba8888', 'argb1555', Op
     const inputBlue  = input.bytes[inputOffset + 2];
     const inputAlpha = input.bytes[inputOffset + 3];
 
-    const outputRed   = convert8to5(inputRed);
-    const outputGreen = convert8to5(inputGreen);
-    const outputBlue  = convert8to5(inputBlue);
+    let outputRed   = convert8to5(inputRed);
+    let outputGreen = convert8to5(inputGreen);
+    let outputBlue  = convert8to5(inputBlue);
     const outputAlpha = convert8to1(inputAlpha);
+
+    if (outputAlpha === 0) {
+      outputRed = 0;
+      outputGreen = 0;
+      outputBlue = 0;
+    }
 
     const outputUint16 = (outputAlpha << 15) | (outputRed << 10) | (outputGreen << 5) | outputBlue;
 
