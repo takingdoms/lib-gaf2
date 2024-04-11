@@ -13,5 +13,8 @@ export default defineConfig({
       fileName: 'lib-gaf',
     },
     sourcemap: true,
+    manifest: true,
+    minify: true,
+    reportCompressedSize: true,
   },
 });
